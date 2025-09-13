@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PantherByte.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="PantherByte.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="PantherByte"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        SizeToContent="WidthAndHeight"
+        CanMaximize="False">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/> -->
+    
+    <Panel>
+        <!-- Creates background theme. -->
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65"/>
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        
+        <Grid
+            Margin="20"
+            ShowGridLines="False"
+            Width="500"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto"
+            RowSpacing="10">
+            <TextBlock
+                Grid.Row="0"
+                Text="Youtube Video Downloads"
+                FontSize="30"/>
+            <TextBlock
+                Grid.Row="1"
+                Text="Enter your video link and save location."
+                FontSize="20"></TextBlock>
+            <Border Grid.Row="2" BorderBrush="White" BorderThickness="0,0,0,1"/>
+            <StackPanel Grid.Row="3" Spacing="5">
+                <TextBlock Text="Save location:"/>
+                <Grid
+                    ColumnDefinitions="*, 30"
+                    ColumnSpacing="5">
+                    <TextBox
+                        Grid.Column="0"
+                        Text="{Binding SaveLocation}"
+                        Watermark="Choose a folder..."/>
+                    <Button
+                        Grid.Column="1"
+                        Content=">"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Command="{Binding GetSaveLocationCommand}"/>
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="4" Spacing="5">
+                <TextBlock Text="Video link:"/>
+                <TextBox
+                    Text="{Binding Link}"
+                    Watermark="Paste link here..."/>
+            </StackPanel>
+            <Button
+                Grid.Row="5"
+                Content="Download"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding CanDownload}"
+                Command="{Binding DownloadFileCommand}"/>
+        </Grid>
+    </Panel>
+
+</Window>
