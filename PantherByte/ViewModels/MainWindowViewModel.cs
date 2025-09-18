@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using DynamicData;
+using PantherByte.Messages;
 using PantherByte.Services;
 using ReactiveUI;
+using PantherByte.Services.Interfaces;
 
 namespace PantherByte.ViewModels;
 
@@ -12,6 +18,7 @@ public partial class MainWindowViewModel : ViewModelBase {
     private string _link = string.Empty;
     private string _saveLocation = string.Empty;
     private string _format = "mp3";
+    private bool _isDownloading = false;
     private bool _canDownload = true;
 
     /// <summary>
@@ -24,7 +31,7 @@ public partial class MainWindowViewModel : ViewModelBase {
 
     /// <summary>
     /// The format to download the video in. Currently supported options are MP3, MP4, and WAV. This will become the
-    /// argument passed to the "-t" argument in <see cref="GenerateCmdStringAsync"/>.
+    /// argument passed to the "-t" argument in <see cref="GenerateCmdArgsAsync"/>.
     /// </summary>
     public string Format {
         get => _format;
@@ -41,13 +48,22 @@ public partial class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
+    /// Indicates if the command is currently running. When the command is running, the application
+    /// should disable all inputs and/or open a blocking modal window.
+    /// </summary>
+    public bool IsDownloading {
+        get => _isDownloading;
+        set => this.RaiseAndSetIfChanged(ref _isDownloading, value);
+    }
+    
+    /// <summary>
     /// Indicates if the file can be downloaded. If not, the download button is disabled.
     /// </summary>
     public bool CanDownload {
         get => _canDownload;
         set => this.RaiseAndSetIfChanged(ref _canDownload, value);
     }
-
+    
     /// <summary>
     /// Constructor. Mainly used for subscribing properties to the changes from other properties.
     /// </summary>
@@ -109,7 +125,17 @@ public partial class MainWindowViewModel : ViewModelBase {
         // The command string format to use: yt-dlp <link> -t <mp3|mp4|wav> -P <path> --no-playlist
         // yt-dlp requires usage of ffmpeg as well.
         // Code will be executed when the button is clicked.
-        return await Task.Run(() => new List<string>([Link, "-t", Format, "-P", SaveLocation, "--no-playlist"]));
+
+        var fileName = "";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            Console.WriteLine("Using Windows program.");
+            fileName = "Programs/yt-dlp-win64.exe";
+        } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            Console.WriteLine("Using Linux program. May require additional run permissions.");
+            fileName = "Programs/yt-dlp-linux";
+        }
+
+        return await Task.Run(() => new List<string>([fileName, Link, "-t", Format, "-P", SaveLocation, "--no-playlist"]));
     }
 
     /// <summary>
@@ -122,9 +148,27 @@ public partial class MainWindowViewModel : ViewModelBase {
         var args = await GenerateCmdArgsAsync();
         // Run the command.
         try {
-            System.Diagnostics.Process.Start("yt-dlp", args);
+            // The command that's run must work on at least Linux and Windows
+            ProcessStartInfo info = new() {
+                FileName = args[0],
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            info.ArgumentList.AddRange(args[1..]);
+            
+            // This window isn't linked to the download process yet, but that is the plan.
+            await OpenProgressWindowAsync(info);
         } catch (Exception ex) {
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    /// <summary>
+    /// Opens a ProgressWindow as a modal dialog. I haven't decided if this window should run the command or if it
+    /// should simply display the progress of a command that's running here.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenProgressWindowAsync(ProcessStartInfo info) {
+        await WeakReferenceMessenger.Default.Send(new OpenProgressDialogMessage(info));
     }
 }

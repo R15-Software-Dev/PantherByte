@@ -11,7 +11,8 @@
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         SizeToContent="WidthAndHeight"
-        CanMaximize="False">
+        CanMaximize="False"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

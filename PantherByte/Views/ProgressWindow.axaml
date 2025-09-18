@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PantherByte.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
+        x:Class="PantherByte.Views.ProgressWindow"
+        x:DataType="vm:ProgressWindowViewModel"
+        Title="Loading..."
+        TransparencyLevelHint="AcrylicBlur"
+        SizeToContent="WidthAndHeight"
+        CanMaximize="False"
+        WindowStartupLocation="CenterOwner">
+    
+    <StackPanel
+        Width="700"
+        Spacing="10">
+        
+        <StackPanel Spacing="10" Margin="10">
+            <TextBlock
+                HorizontalAlignment="Center"
+                Text="{Binding StatusMessage}"/>
+            <ProgressBar
+                IsIndeterminate="{Binding InProgress}"
+                Foreground="{Binding BarColor}"
+                Maximum="100"
+                Value="100"/>
+        </StackPanel>
+        
+        <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch"
+                  Background="Transparent"
+                  BorderBrush="Transparent"
+                  BorderThickness="1"
+                  Header="More information..."
+                  Margin="5">
+            <Grid RowDefinitions="*" ColumnDefinitions="*">
+                <ScrollViewer Grid.Row="0"
+                              Height="100"
+                              HorizontalScrollBarVisibility="Auto" 
+                              VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding ProcessStdOut}"
+                               TextWrapping="Wrap"/>
+                </ScrollViewer>
+            </Grid>
+        </Expander>
+        
+    </StackPanel>
+</Window>

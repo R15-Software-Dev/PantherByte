@@ -11,6 +11,7 @@
     <ItemGroup>
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
+        <Folder Include="Programs\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,5 +28,14 @@
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
         <PackageReference Include="ReactiveUI" Version="21.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Programs\yt-dlp-linux">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Programs\yt-dlp-win64.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 </Project>
