@@ -19,8 +19,6 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <!-- <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/> -->
-    
     <Panel>
         <!-- Creates background theme. -->
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
