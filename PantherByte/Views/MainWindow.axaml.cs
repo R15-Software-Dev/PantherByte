@@ -6,10 +6,8 @@ using PantherByte.ViewModels;
 namespace PantherByte.Views;
 
 public partial class MainWindow : Window {
-    public MainWindow(MainWindowViewModel viewModel) {
+    public MainWindow() {
         InitializeComponent();
-
-        DataContext = viewModel;
         
         WeakReferenceMessenger.Default.Register<MainWindow, OpenProgressDialogMessage>(this, 
             static (w, m) => {

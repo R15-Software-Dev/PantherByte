@@ -7,7 +7,7 @@
         x:Class="PantherByte.Views.ProgressWindow"
         x:DataType="vm:ProgressWindowViewModel"
         Title="Loading..."
-        TransparencyLevelHint="AcrylicBlur"
+        Background="Gray"
         SizeToContent="WidthAndHeight"
         CanMaximize="False"
         WindowStartupLocation="CenterOwner">
@@ -28,17 +28,18 @@
         </StackPanel>
         
         <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch"
-                  Background="Transparent"
-                  BorderBrush="Transparent"
-                  BorderThickness="1"
-                  Header="More information..."
-                  Margin="5">
+                  Margin="5"
+                  BorderThickness="0"
+                  Background="Transparent">
+            <Expander.Header>More information...</Expander.Header>
             <Grid RowDefinitions="*" ColumnDefinitions="*">
                 <ScrollViewer Grid.Row="0"
+                              x:Name="ScrollView"
                               Height="100"
                               HorizontalScrollBarVisibility="Auto" 
                               VerticalScrollBarVisibility="Auto">
-                    <TextBlock Text="{Binding ProcessStdOut}"
+                    <TextBlock x:Name="StdOutText"
+                               Text="{Binding ProcessStdOut}"
                                TextWrapping="Wrap"/>
                 </ScrollViewer>
             </Grid>

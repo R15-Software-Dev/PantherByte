@@ -11,7 +11,8 @@
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         SizeToContent="WidthAndHeight"
-        CanMaximize="False"
+        ExtendClientAreaToDecorationsHint="True"
+        CanResize="False"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
@@ -27,13 +28,13 @@
                 <ExperimentalAcrylicMaterial
                     BackgroundSource="Digger"
                     TintColor="Black"
-                    TintOpacity="1"
-                    MaterialOpacity="0.65"/>
+                    TintOpacity="0.5"
+                    MaterialOpacity="0.5"/>
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         
         <Grid
-            Margin="20"
+            Margin="20 35 20 20"
             ShowGridLines="False"
             Width="500"
             RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto"

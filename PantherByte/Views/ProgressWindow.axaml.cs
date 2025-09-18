@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using PantherByte.ViewModels;
 
 namespace PantherByte.Views;
@@ -16,5 +14,7 @@ public partial class ProgressWindow : Window {
             
             await vm.RunProcessAsync();
         };
+
+        StdOutText.SizeChanged += (_, _) => ScrollView.ScrollToEnd();
     }
 }

@@ -153,6 +153,8 @@ public partial class MainWindowViewModel : ViewModelBase {
                 FileName = args[0],
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
             info.ArgumentList.AddRange(args[1..]);
             
