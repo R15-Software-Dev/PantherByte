@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Messaging;
 using DynamicData;
 using PantherByte.Messages;
@@ -17,8 +19,8 @@ namespace PantherByte.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase {
     private string _link = string.Empty;
     private string _saveLocation = string.Empty;
-    private string _format = "mp3";
-    private bool _isDownloading = false;
+    private string _format = "mp4";
+    private ObservableCollection<string> _availableFormats = ["mp4", "mp3", "wav", "aac", "mkv"];
     private bool _canDownload = true;
 
     /// <summary>
@@ -37,23 +39,19 @@ public partial class MainWindowViewModel : ViewModelBase {
         get => _format;
         set => this.RaiseAndSetIfChanged(ref _format, value);
     }
+
+    public ObservableCollection<string> AvailableFormats {
+        get => _availableFormats;
+        set => this.RaiseAndSetIfChanged(ref _availableFormats, value);
+    }
     
     /// <summary>
     /// The folder to save the files in. This will become the argument passed to the "-P" argument in
-    /// <see cref="GenerateCmdStringAsync"/>.
+    /// <see cref="GenerateCmdArgsAsync"/>.
     /// </summary>
     public string SaveLocation {
         get => _saveLocation;
         set => this.RaiseAndSetIfChanged(ref _saveLocation, value);
-    }
-
-    /// <summary>
-    /// Indicates if the command is currently running. When the command is running, the application
-    /// should disable all inputs and/or open a blocking modal window.
-    /// </summary>
-    public bool IsDownloading {
-        get => _isDownloading;
-        set => this.RaiseAndSetIfChanged(ref _isDownloading, value);
     }
     
     /// <summary>
@@ -116,7 +114,7 @@ public partial class MainWindowViewModel : ViewModelBase {
             Console.WriteLine(ex.ToString());
         }
     }
-    
+
     /// <summary>
     /// Generates the arguments used for the main command string.
     /// </summary>
@@ -126,16 +124,27 @@ public partial class MainWindowViewModel : ViewModelBase {
         // yt-dlp requires usage of ffmpeg as well.
         // Code will be executed when the button is clicked.
 
-        var fileName = "";
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-            Console.WriteLine("Using Windows program.");
-            fileName = "Programs/yt-dlp-win64.exe";
-        } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-            Console.WriteLine("Using Linux program. May require additional run permissions.");
-            fileName = "Programs/yt-dlp-linux";
-        }
+        return await Task.Run(() => {
+            var fileName = "";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                Console.WriteLine("Using Windows program.");
+                fileName = "Programs/yt-dlp-win64.exe";
+            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                Console.WriteLine("Using Linux program. May require additional run permissions.");
+                fileName = "Programs/yt-dlp-linux";
+            }
 
-        return await Task.Run(() => new List<string>([fileName, Link, "-t", Format, "-P", SaveLocation, "--no-playlist"]));
+            List<string> args = [fileName, Link, "-P", SaveLocation, "--no-playlist"];
+
+            // WAV files require special command arguments
+            if (Format.Equals("wav")) {
+                args.AddRange(["--extract-audio", "--audio-format", Format]);
+            } else {
+                args.AddRange(["-t", Format]);
+            }
+            
+            return args;
+        });
     }
 
     /// <summary>
