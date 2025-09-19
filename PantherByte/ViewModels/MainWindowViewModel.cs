@@ -19,8 +19,8 @@ namespace PantherByte.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase {
     private string _link = string.Empty;
     private string _saveLocation = string.Empty;
-    private string _format = "mp3";
-    private ObservableCollection<string> _availableFormats = ["mp3", "mp4", "wav", "aac", "mkv"];
+    private string _format = "mp4";
+    private ObservableCollection<string> _availableFormats = ["mp4", "mp3", "wav", "aac", "mkv"];
     private bool _canDownload = true;
 
     /// <summary>
