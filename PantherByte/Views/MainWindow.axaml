@@ -33,52 +33,48 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         
-        <Grid
-            Margin="20 35 20 20"
-            ShowGridLines="False"
-            Width="500"
-            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto"
-            RowSpacing="10">
-            <TextBlock
-                Grid.Row="0"
-                Text="Youtube Video Downloads"
-                FontSize="30"/>
-            <TextBlock
-                Grid.Row="1"
-                Text="Enter your video link and save location."
-                FontSize="20"></TextBlock>
-            <Border Grid.Row="2" BorderBrush="White" BorderThickness="0,0,0,1"/>
-            <StackPanel Grid.Row="3" Spacing="5">
+        <StackPanel Margin="20 35 20 20"
+                    Width="500"
+                    Spacing="10"
+                    HorizontalAlignment="Stretch">
+            <TextBlock Text="Youtube Video Downloads"
+                       FontSize="30"/>
+            <TextBlock Text="Enter your video link and save location."
+                       FontSize="20"></TextBlock>
+            <Border BorderBrush="White" BorderThickness="0,0,0,1"/>
+            <StackPanel Spacing="5">
                 <TextBlock Text="Save location:"/>
-                <Grid
-                    ColumnDefinitions="*, 30"
-                    ColumnSpacing="5">
-                    <TextBox
-                        Grid.Column="0"
-                        Text="{Binding SaveLocation}"
-                        Watermark="Choose a folder..."/>
-                    <Button
-                        Grid.Column="1"
-                        Content=">"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        Command="{Binding GetSaveLocationCommand}"/>
+                <Grid ColumnDefinitions="*, 30"
+                      ColumnSpacing="5">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SaveLocation}"
+                             Watermark="Choose a folder..."/>
+                    <Button Grid.Column="1"
+                            Content=">"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Command="{Binding GetSaveLocationCommand}"/>
                 </Grid>
             </StackPanel>
-            <StackPanel Grid.Row="4" Spacing="5">
+            <StackPanel Spacing="5">
                 <TextBlock Text="Video link:"/>
-                <TextBox
-                    Text="{Binding Link}"
-                    Watermark="Paste link here..."/>
+                <TextBox Text="{Binding Link}"
+                         Watermark="Paste link here..."/>
             </StackPanel>
-            <Button
-                Grid.Row="5"
-                Content="Download"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsEnabled="{Binding CanDownload}"
-                Command="{Binding DownloadFileCommand}"/>
-        </Grid>
+            <StackPanel Spacing="5"
+                        HorizontalAlignment="Stretch">
+                <TextBlock Text="Format:"/>
+                <ComboBox HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding AvailableFormats}"
+                          SelectedItem="{Binding Format, Mode=TwoWay}">
+                </ComboBox>
+            </StackPanel>
+            <Button Content="Download"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding CanDownload}"
+                    Command="{Binding DownloadFileCommand}"/>
+        </StackPanel>
     </Panel>
 
 </Window>
