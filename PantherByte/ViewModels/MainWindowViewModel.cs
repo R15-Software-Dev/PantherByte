@@ -13,6 +13,7 @@ using PantherByte.Messages;
 using PantherByte.Services;
 using ReactiveUI;
 using PantherByte.Services.Interfaces;
+using PantherByte.Views;
 
 namespace PantherByte.ViewModels;
 
@@ -147,6 +148,32 @@ public partial class MainWindowViewModel : ViewModelBase {
         });
     }
 
+    private async Task<bool> CheckFfmpegInstalled() {
+        return await Task.Run(async () => {
+            ProcessStartInfo ffmpegInfo = new("ffmpeg") {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            Process process = new() {
+                StartInfo = ffmpegInfo
+            };
+
+            bool result = true;
+
+            try {
+                process.Start();
+                await process.WaitForExitAsync();
+            }
+            catch (Exception ex) {
+                result = false;
+            }
+
+            return result;
+        });
+    }
+
     /// <summary>
     /// Handles the download process of the file. Generates the command and runs it.
     /// </summary>
@@ -166,6 +193,17 @@ public partial class MainWindowViewModel : ViewModelBase {
                 CreateNoWindow = true
             };
             info.ArgumentList.AddRange(args[1..]);
+            
+            // Check that ffmpeg is installed.
+            var temp = await CheckFfmpegInstalled();
+            // if (!await CheckFfmpegInstalled()) {
+            SimpleDialogViewModel vm = new("Dependency ffmpeg was not found. Would you like to install it?",
+                "Dependency Install");
+                var result = await WeakReferenceMessenger.Default.Send(new OpenSimpleDialogMessage(vm));
+                if (result is not null) {
+                    Console.WriteLine($"Received result: {result}");
+                }
+            // }
             
             // This window isn't linked to the download process yet, but that is the plan.
             await OpenProgressWindowAsync(info);

@@ -5,7 +5,7 @@ using ReactiveUI;
 
 namespace PantherByte.ViewModels;
 
-public class ProgressWindowViewModel : ViewModelBase {
+public partial class ProgressWindowViewModel : ViewModelBase, IProgressWindowViewModel {
     // Pass variables between the MainWindow and this window, specifically what point the application
     // is at in terms of downloading. We'll likely do this as a simple percentage of total progress.
     private readonly ProcessStartInfo _processStartInfo;
@@ -48,12 +48,13 @@ public class ProgressWindowViewModel : ViewModelBase {
     public async Task RunProcessAsync() {
         Process downloadProcess = new();
         downloadProcess.StartInfo = _processStartInfo;
-
+        
+        downloadProcess.EnableRaisingEvents = true;
         downloadProcess.OutputDataReceived += (_, e) => {
-            if (!string.IsNullOrWhiteSpace(e.Data)) {
-                Console.WriteLine(e.Data);
-                ProcessStdOut += e.Data + "\n";
-            }
+            if (string.IsNullOrWhiteSpace(e.Data)) return;
+            
+            Console.WriteLine(e.Data);
+            ProcessStdOut += e.Data + "\n";
         };
 
         downloadProcess.ErrorDataReceived += (_, e) => {

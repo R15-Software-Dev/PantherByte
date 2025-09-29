@@ -9,10 +9,8 @@ public partial class ProgressWindow : Window {
         
         // This feels a little fragile, but we'll leave it for now.
         Opened += async (_, _) => {
-            if (DataContext is not ProgressWindowViewModel vm)
-                return;
-            
-            await vm.RunProcessAsync();
+            if (DataContext is IProgressWindowViewModel vm)
+                await vm.RunProcessAsync();
         };
 
         StdOutText.SizeChanged += (_, _) => ScrollView.ScrollToEnd();

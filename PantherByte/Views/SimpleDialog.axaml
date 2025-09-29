@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PantherByte.ViewModels"
+        x:DataType="vm:SimpleDialogViewModel"
+        mc:Ignorable="d"
+        x:Class="PantherByte.Views.SimpleDialog"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        Background="Gray"
+        Title="{Binding Title}"
+        CanMaximize="False">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:SimpleDialogViewModel/>
+    </Design.DataContext>
+    
+    <StackPanel Spacing="20" Margin="10" HorizontalAlignment="Stretch">
+        <TextBlock Text="{Binding PromptMessage}" HorizontalAlignment="Center"/>
+        <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Width="200" MaxWidth="300">
+            <Button Grid.Column="0"
+                    Content="Yes"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Click="YesButtonClicked"/>
+            <Button Grid.Column="1"
+                    Content="No"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Click="NoButtonClicked"/>
+        </Grid>
+    </StackPanel>
+</Window>
