@@ -11,39 +11,40 @@
         SizeToContent="WidthAndHeight"
         CanMaximize="False"
         WindowStartupLocation="CenterOwner">
-    
+
     <StackPanel
         Width="700"
         Spacing="10">
-        
+
         <StackPanel Spacing="10" Margin="10">
             <TextBlock
                 HorizontalAlignment="Center"
-                Text="{Binding StatusMessage}"/>
+                Text="{Binding StatusMessage}" />
             <ProgressBar
                 IsIndeterminate="{Binding InProgress}"
                 Foreground="{Binding BarColor}"
                 Maximum="100"
-                Value="100"/>
+                Value="100" />
         </StackPanel>
-        
+
         <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch"
                   Margin="5"
                   BorderThickness="0"
-                  Background="Transparent">
+                  Background="Transparent"
+                  x:Name="InfoExpander">
             <Expander.Header>More information...</Expander.Header>
             <Grid RowDefinitions="*" ColumnDefinitions="*">
                 <ScrollViewer Grid.Row="0"
                               x:Name="ScrollView"
                               Height="100"
-                              HorizontalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
                     <TextBlock x:Name="StdOutText"
                                Text="{Binding ProcessStdOut}"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap" />
                 </ScrollViewer>
             </Grid>
         </Expander>
-        
+
     </StackPanel>
 </Window>

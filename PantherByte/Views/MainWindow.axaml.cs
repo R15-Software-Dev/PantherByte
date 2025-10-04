@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using PantherByte.Messages;
 using PantherByte.ViewModels;
@@ -12,17 +13,26 @@ public partial class MainWindow : Window {
         WeakReferenceMessenger.Default.Register<MainWindow, OpenProgressDialogMessage>(this,
             static (w, m) => {
                 var dialog = new ProgressWindow {
-                    DataContext = new ProgressWindowViewModel(m.Info)
+                    DataContext = m.ViewModel
                 };
                 m.Reply(dialog.ShowDialog<ProgressWindowViewModel?>(w));
             });
 
         WeakReferenceMessenger.Default.Register<MainWindow, OpenSimpleDialogMessage>(this,
-            static (w, m) => {
+            static async (w, m) => {
                 var dialog = new SimpleDialog {
                     DataContext = m.ViewModel
                 };
-                m.Reply(dialog.ShowDialog<SimpleDialogViewModel.SimpleDialogResult?>(w));
+                var response = dialog.ShowDialog<SimpleDialogViewModel.SimpleDialogResult?>(w);
+                m.Reply(response);
+            });
+
+        WeakReferenceMessenger.Default.Register<MainWindow, OpenNotificationDialogMessage>(this,
+            static (w, m) => {
+                var dialog = new NotificationDialog {
+                    DataContext = new NotificationDialogViewModel(m.Title, m.Message)
+                };
+                m.Reply(dialog.ShowDialog<NotificationDialogViewModel?>(w));
             });
     }
 }

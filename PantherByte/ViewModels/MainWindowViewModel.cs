@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -27,7 +28,7 @@ public partial class MainWindowViewModel : ViewModelBase {
     /// <summary>
     /// The link to the video to download. For now, only use YouTube links.
     /// </summary>
-    public string Link { 
+    public string Link {
         get => _link;
         set => this.RaiseAndSetIfChanged(ref _link, value);
     }
@@ -45,7 +46,7 @@ public partial class MainWindowViewModel : ViewModelBase {
         get => _availableFormats;
         set => this.RaiseAndSetIfChanged(ref _availableFormats, value);
     }
-    
+
     /// <summary>
     /// The folder to save the files in. This will become the argument passed to the "-P" argument in
     /// <see cref="GenerateCmdArgsAsync"/>.
@@ -54,7 +55,7 @@ public partial class MainWindowViewModel : ViewModelBase {
         get => _saveLocation;
         set => this.RaiseAndSetIfChanged(ref _saveLocation, value);
     }
-    
+
     /// <summary>
     /// Indicates if the file can be downloaded. If not, the download button is disabled.
     /// </summary>
@@ -62,7 +63,7 @@ public partial class MainWindowViewModel : ViewModelBase {
         get => _canDownload;
         set => this.RaiseAndSetIfChanged(ref _canDownload, value);
     }
-    
+
     /// <summary>
     /// Constructor. Mainly used for subscribing properties to the changes from other properties.
     /// </summary>
@@ -78,7 +79,7 @@ public partial class MainWindowViewModel : ViewModelBase {
             )
             .Subscribe(value => CanDownload = value);
     }
-    
+
     /// <summary>
     /// Gets the save location for the generated file. We are only allowing users to download one file at a time for now.
     /// </summary>
@@ -101,16 +102,20 @@ public partial class MainWindowViewModel : ViewModelBase {
                     if (Directory.Exists(tempPath)) {
                         SaveLocation = tempPath;
                         Console.WriteLine("Successfully set the file path.");
-                    } else {
+                    }
+                    else {
                         throw new DirectoryNotFoundException($"Directory does not exist: {tempPath}");
                     }
-                } else {
+                }
+                else {
                     throw new NullReferenceException("The resulting storage folder was null.");
                 }
-            } else {
+            }
+            else {
                 throw new NullReferenceException("Missing a FileSaveService instance");
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             // Exceptions are caught locally for now, but will eventually require a modal error window.
             Console.WriteLine(ex.ToString());
         }
@@ -119,7 +124,6 @@ public partial class MainWindowViewModel : ViewModelBase {
     /// <summary>
     /// Generates the arguments used for the main command string.
     /// </summary>
-    [RelayCommand]
     private async Task<List<string>> GenerateCmdArgsAsync() {
         // The command string format to use: yt-dlp <link> -t <mp3|mp4|wav> -P <path> --no-playlist
         // yt-dlp requires usage of ffmpeg as well.
@@ -130,7 +134,8 @@ public partial class MainWindowViewModel : ViewModelBase {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 Console.WriteLine("Using Windows program.");
                 fileName = "Programs/yt-dlp-win64.exe";
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 Console.WriteLine("Using Linux program. May require additional run permissions.");
                 fileName = "Programs/yt-dlp-linux";
             }
@@ -140,14 +145,19 @@ public partial class MainWindowViewModel : ViewModelBase {
             // WAV files require special command arguments
             if (Format.Equals("wav")) {
                 args.AddRange(["--extract-audio", "--audio-format", Format]);
-            } else {
+            }
+            else {
                 args.AddRange(["-t", Format]);
             }
-            
+
             return args;
         });
     }
 
+    /// <summary>
+    /// Checks if ffmpeg is installed.
+    /// </summary>
+    /// <returns>True if ffmpeg is installed, or false if not.</returns>
     private async Task<bool> CheckFfmpegInstalled() {
         return await Task.Run(async () => {
             ProcessStartInfo ffmpegInfo = new("ffmpeg") {
@@ -160,13 +170,13 @@ public partial class MainWindowViewModel : ViewModelBase {
                 StartInfo = ffmpegInfo
             };
 
-            bool result = true;
+            var result = true;
 
             try {
                 process.Start();
                 await process.WaitForExitAsync();
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 result = false;
             }
 
@@ -175,7 +185,9 @@ public partial class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Handles the download process of the file. Generates the command and runs it.
+    /// Handles the download process of the file.
+    ///
+    /// This command is also where the dependency check/installation is run from.
     /// </summary>
     [RelayCommand]
     private async Task DownloadFileAsync() {
@@ -184,40 +196,88 @@ public partial class MainWindowViewModel : ViewModelBase {
         var args = await GenerateCmdArgsAsync();
         // Run the command.
         try {
+            // ffmpeg installation check
+            var installed = await CheckFfmpegInstalled();
+            Console.WriteLine($"Is ffmpeg installed: {installed}");
+            if (!installed) {
+                SimpleDialogViewModel vm = new("Dependency ffmpeg was not found. Would you like to install it?",
+                    "Dependency Install");
+                var result = await WeakReferenceMessenger.Default.Send(new OpenSimpleDialogMessage(vm));
+                if (result is SimpleDialogViewModel.SimpleDialogResult.Yes) {
+                    // Install the program
+                    installed = await InstallFfmpegAsync();
+                }
+            }
+
+            // This means installation has failed or the user canceled it.
+            if (!installed) return;
+
             // The command that's run must work on at least Linux and Windows
             ProcessStartInfo info = new() {
                 FileName = args[0],
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
             };
             info.ArgumentList.AddRange(args[1..]);
-            
-            // Check that ffmpeg is installed.
-            var temp = await CheckFfmpegInstalled();
-            // if (!await CheckFfmpegInstalled()) {
-            SimpleDialogViewModel vm = new("Dependency ffmpeg was not found. Would you like to install it?",
-                "Dependency Install");
-                var result = await WeakReferenceMessenger.Default.Send(new OpenSimpleDialogMessage(vm));
-                if (result is not null) {
-                    Console.WriteLine($"Received result: {result}");
-                }
-            // }
-            
+
             // This window isn't linked to the download process yet, but that is the plan.
             await OpenProgressWindowAsync(info);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    /// <summary>
+    /// Begins the installation process for ffmpeg and displays a window.
+    /// </summary>
+    /// <returns>True if the installation was successful, or false if not.</returns>
+    private async Task<bool> InstallFfmpegAsync() {
+        ProcessStartInfo info = new() {
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        var result = false;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            // Run: winget install "FFmpeg (Essentials Build)"
+            info.Verb = "runas";
+            info.FileName = "winget";
+            info.Arguments = "install \"FFmpeg (Essentials Build)\"";
+
+            ProgressWindowViewModel vm = new(info) {
+                StatusMessage = "Installing ffmpeg..."
+            };
+            await WeakReferenceMessenger.Default.Send(new OpenProgressDialogMessage(vm));
+
+            // If there was an error, return false. Otherwise, true.
+            result = !vm.Error;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            await WeakReferenceMessenger.Default.Send(new OpenNotificationDialogMessage(
+                "Linux Install Error",
+                "Linux users must install ffmpeg manually.\nThis may be developed further in the future."
+            ));
+
+            // Since this requires a manual install (we can't run sudo nicely) we'll just return false,
+            // as we didn't actually install anything.
+            result = false;
+        }
+
+        return result;
     }
 
     /// <summary>
     /// Opens a ProgressWindow as a modal dialog. I haven't decided if this window should run the command or if it
     /// should simply display the progress of a command that's running here.
     /// </summary>
-    [RelayCommand]
     private async Task OpenProgressWindowAsync(ProcessStartInfo info) {
-        await WeakReferenceMessenger.Default.Send(new OpenProgressDialogMessage(info));
+        ProgressWindowViewModel vm = new(info);
+        await WeakReferenceMessenger.Default.Send(new OpenProgressDialogMessage(vm));
     }
 }

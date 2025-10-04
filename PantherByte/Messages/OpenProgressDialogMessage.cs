@@ -4,6 +4,6 @@ using PantherByte.ViewModels;
 
 namespace PantherByte.Messages;
 
-public class OpenProgressDialogMessage(ProcessStartInfo info) : AsyncRequestMessage<ProgressWindowViewModel?> {
-    public readonly ProcessStartInfo Info = info;
+public class OpenProgressDialogMessage(ProgressWindowViewModel vm) : AsyncRequestMessage<ProgressWindowViewModel?> {
+    public readonly ProgressWindowViewModel ViewModel = vm;
 };

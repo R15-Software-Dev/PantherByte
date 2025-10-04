@@ -14,7 +14,7 @@ public partial class ProgressWindowViewModel : ViewModelBase, IProgressWindowVie
     private bool _inProgress = false;
     private string _statusMessage = "Downloading video...";
     private string _barColor = "CornflowerBlue";
-    
+
     public string ProcessStdOut {
         get => _processStdOut;
         set => this.RaiseAndSetIfChanged(ref _processStdOut, value);
@@ -48,11 +48,11 @@ public partial class ProgressWindowViewModel : ViewModelBase, IProgressWindowVie
     public async Task RunProcessAsync() {
         Process downloadProcess = new();
         downloadProcess.StartInfo = _processStartInfo;
-        
+
         downloadProcess.EnableRaisingEvents = true;
         downloadProcess.OutputDataReceived += (_, e) => {
             if (string.IsNullOrWhiteSpace(e.Data)) return;
-            
+
             Console.WriteLine(e.Data);
             ProcessStdOut += e.Data + "\n";
         };
@@ -77,7 +77,7 @@ public partial class ProgressWindowViewModel : ViewModelBase, IProgressWindowVie
         catch (Exception e) {
             Console.WriteLine(e.StackTrace);
             ProcessStdOut += "Error: " + e.StackTrace + "\n";
-            StatusMessage = "Error while downloading video.";
+            StatusMessage = "Error while performing download.";
             BarColor = "Red";
             Error = true;
         }
